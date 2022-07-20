@@ -11,6 +11,8 @@ import linecache  # 用来读取txt文件中特定行的内容
 from torch import nn
 import torch.optim as optim
 from torch.utils.data import Dataset
+from torchvision import transforms
+
 
 PATH_caption_test = "D:\Flickr8k\captions_test.txt"
 PATH_caption_train = "D:\Flickr8k\captions_train.txt"
@@ -28,10 +30,11 @@ def cuda_check():
 
 
 class get_dataset(Dataset):
-    def __init__(self, caption_path, image_folder_path):
+    def __init__(self, caption_path, image_folder_path, dictionary):
         # self
         self.caption_path = caption_path
         self.image_path = image_folder_path
+        self.dictionary = dictionary
 
     def __getitem__(self, idx):
         # get item
@@ -41,13 +44,17 @@ class get_dataset(Dataset):
         image_name = content[0]
         caption = content[1]
         words = caption.split(' ', -1) + ['<eos>']
+        word_idx = []
+
+        for word in words:
+            word_idx.append(dictionary.word2idx.get(word))
 
         image_path = os.path.join(self.image_path, image_name)
         image = cv.imread(image_path, 1)
 
 
 
-        return image, words
+        return image, word_idx
 
     def __len__(self):
         len(open(self.caption_path, 'r').readlines())
@@ -81,7 +88,21 @@ class Dictionary(object):
 
 
 if __name__ == '__main__':
+
     cuda_check()
+
+    dictionary = Dictionary()
+    dictionary.add_file(PATH_caption_test)
+    dictionary.add_file(PATH_caption_train)
+
+    print("loading train data.......")
+    train_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary)
+    print("train data load success!")
+    print("loading test data.......")
+    test_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary)
+    print("test data load success!")
+
+
 
 
 
