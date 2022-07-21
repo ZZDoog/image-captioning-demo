@@ -29,16 +29,23 @@ def cuda_check():
         device = "cpu"
 
 
+
+
 class get_dataset(Dataset):
     def __init__(self, caption_path, image_folder_path, dictionary):
         # self
         self.caption_path = caption_path
         self.image_path = image_folder_path
         self.dictionary = dictionary
+        self.transform = transforms.Compose([
+                            transforms.Resize((32, 32)),  # 缩放
+                            transforms.ToTensor(),  # 图片转张量，同时归一化0-255 ---》 0-1
+                            transforms.Normalize(0, 1),  # 标准化均值为0标准差为1
+                            ])
 
     def __getitem__(self, idx):
         # get item
-        content = linecache.getline(self.caption_path, idx)
+        content = linecache.getline(self.caption_path, idx+1)
         content = content.split(',', -1)
 
         image_name = content[0]
@@ -51,6 +58,9 @@ class get_dataset(Dataset):
 
         image_path = os.path.join(self.image_path, image_name)
         image = cv.imread(image_path, 1)
+
+        image_pil = transforms.ToPILImage()(image)
+        image = self.transform(image_pil)
 
 
 
@@ -95,12 +105,21 @@ if __name__ == '__main__':
     dictionary.add_file(PATH_caption_test)
     dictionary.add_file(PATH_caption_train)
 
+
+
     print("loading train data.......")
     train_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary)
     print("train data load success!")
     print("loading test data.......")
     test_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary)
     print("test data load success!")
+
+    image, caption = train_data[0]
+
+    print("done")
+
+
+
 
 
 
