@@ -30,18 +30,22 @@ if __name__ == '__main__':
     dictionary = Dictionary()
     dictionary.add_file(PATH_caption_test)
     dictionary.add_file(PATH_caption_train)
+    dictionary.add_word('<pad>')
+
 
     # create the dataset
     print("loading train data.......")
-    train_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary)
+    train_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary, caption_max_len=30)
     print("train data load success!")
     print("loading test data.......")
-    test_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary)
+    test_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary, caption_max_len=30)
     print("test data load success!")
 
     image, caption = train_data[0]
-
-    print("done")
+    nature_caption = []
+    for idx in caption:
+        nature_caption.append(dictionary.idx2word[idx])
+    print(len(dictionary))
 
 
 

@@ -8,16 +8,18 @@ from torchvision import transforms
 
 
 class get_dataset(Dataset):
-    def __init__(self, caption_path, image_folder_path, dictionary):
+    def __init__(self, caption_path, image_folder_path, dictionary, caption_max_len):
         # self
         self.caption_path = caption_path
         self.image_path = image_folder_path
         self.dictionary = dictionary
         self.transform = transforms.Compose([
-                            transforms.Resize((32, 32)),  # 缩放
+                            transforms.Resize((224, 224)),  # 缩放
                             transforms.ToTensor(),  # 图片转张量，同时归一化0-255 ---》 0-1
-                            transforms.Normalize(0, 1),  # 标准化均值为0标准差为1
+                            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                 std=[0.229, 0.224, 0.225]),  # 这组参数是使用
                             ])
+        self.caption_max_len = caption_max_len
 
     def __getitem__(self, idx):
         # get item
@@ -27,6 +29,9 @@ class get_dataset(Dataset):
         image_name = content[0]
         caption = content[1]
         words = caption.split(' ', -1) + ['<eos>']
+        words.insert(0, '<cls>')
+        while len(words) < self.caption_max_len:
+            words.append('<pad>')
         word_idx = []
 
         for word in words:
@@ -63,6 +68,7 @@ class Dictionary(object):
                 content = line.split(',', -1)
                 caption = content[1]
                 words = caption.split(' ', -1) + ['<eos>']
+                words.insert(0, '<cls>')
                 for word in words:
                     self.add_word(word)
 
