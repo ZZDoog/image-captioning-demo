@@ -8,8 +8,8 @@ import torch
 from torch import nn
 import torch.optim as optim
 
-
 import model
+from model import Encoder, Decoder
 from data import get_dataset, Dictionary
 
 
@@ -18,6 +18,8 @@ from data import get_dataset, Dictionary
 PATH_caption_test = "D:\Flickr8k\captions_test.txt"
 PATH_caption_train = "D:\Flickr8k\captions_train.txt"
 PATH_image_folder = "D:\Flickr8k\Images"
+
+CAPTION_MAX_LEN = 30
 
 
 
@@ -35,17 +37,28 @@ if __name__ == '__main__':
 
     # create the dataset
     print("loading train data.......")
-    train_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary, caption_max_len=30)
+    train_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary, caption_max_len=CAPTION_MAX_LEN)
     print("train data load success!")
     print("loading test data.......")
-    test_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary, caption_max_len=30)
+    test_data = get_dataset(PATH_caption_train, PATH_image_folder, dictionary, caption_max_len=CAPTION_MAX_LEN)
     print("test data load success!")
 
     image, caption = train_data[0]
-    nature_caption = []
-    for idx in caption:
-        nature_caption.append(dictionary.idx2word[idx])
-    print(len(dictionary))
+    # # test the dictionary of making nature language
+    # nature_caption = []
+    # for idx in caption:
+    #     nature_caption.append(dictionary.idx2word[idx])
+    # print(len(dictionary))
+    encoder = Encoder(emb_size=256)
+    decoder = Decoder(dictionary=dictionary, emb_size=256)
+
+    image = image.unsqueeze(0)
+    image_emb = encoder(image)
+    image_emb = image_emb.squeeze()
+    test_caption = decoder(image_emb=image_emb, captions=caption, max_len=CAPTION_MAX_LEN)
+
+
+
 
 
 

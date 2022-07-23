@@ -36,6 +36,7 @@ class get_dataset(Dataset):
 
         for word in words:
             word_idx.append(self.dictionary.word2idx.get(word))
+        word_idx = torch.tensor(word_idx)
 
         image_path = os.path.join(self.image_path, image_name)
         image = cv.imread(image_path, 1)
