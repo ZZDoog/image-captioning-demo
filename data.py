@@ -47,7 +47,7 @@ class get_dataset(Dataset):
         return image, word_idx
 
     def __len__(self):
-        len(open(self.caption_path, 'r').readlines())
+        return len(open(self.caption_path, 'r').readlines())
 
 
 class Dictionary(object):

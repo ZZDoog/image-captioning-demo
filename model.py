@@ -13,6 +13,15 @@ def cuda_check():
     else:
         print('No GPU available, training on CPU.')
         device = "cpu"
+    return device
+
+def cuda_device():
+    train_on_gpu = torch.cuda.is_available()
+    if (train_on_gpu):
+        device = "cuda:0"
+    else:
+        device = "cpu"
+    return device
 
 class Encoder(nn.Module):
 
@@ -34,7 +43,7 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
 
     def __init__(self, dictionary, emb_size):
-        # decode a image embedding to a nature language captioning
+        # decode an image embedding to a nature language captioning
         super(Decoder, self).__init__()
         self.dictionary = dictionary
         self.vocab_size = len(dictionary)
@@ -60,7 +69,11 @@ class Decoder(nn.Module):
 
             else:
                 while len(output) < max_len:
-                    output.append(torch.nn.functional.one_hot(word_idx, num_classes=self.vocab_size))
+                    padding = torch.tensor(torch.nn.functional.one_hot(torch.tensor(self.dictionary.word2idx['<pad>']),
+                                                              num_classes=self.vocab_size), dtype=torch.float32)
+                    padding = padding.to(cuda_device())
+                    output.append(padding)
+                break
 
         return output
 
